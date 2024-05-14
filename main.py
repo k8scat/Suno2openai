@@ -9,7 +9,6 @@ import time
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from init_sql import create_database_and_table
 from utils import generate_music, get_feed
 import schemas
 from utils import generate_music,get_feed
@@ -60,8 +59,7 @@ async def generate_data(chat_user_message,chat_id,timeStamp):
             cookie = await db_manager.get_non_working_cookie()
             break
         except:
-            await create_database_and_table()
-            db_manager.create_database_and_table()
+            await db_manager.create_database_and_table()
     try:
         _return_ids = False
         _return_tags = False
