@@ -5,23 +5,23 @@ import os
 
 load_dotenv()
 
-BASE_URL = os.getenv('BASE_URL','https://studio-api.suno.ai')
-SESSION_ID = os.getenv('SESSION_ID','')
-SQL_name = os.getenv('SQL_name','')
-SQL_password = os.getenv('SQL_password','')
-SQL_IP = os.getenv('SQL_IP','')
-SQL_dk = os.getenv('SQL_dk',3306)
+BASE_URL = os.getenv('BASE_URL', 'https://studio-api.suno.ai')
+DB_USER = os.getenv('DB_USER', '')
+DB_PASSWORD = os.getenv('DB_PASSWORD', '')
+DB_HOST = os.getenv('DB_HOST', '')
+DB_PORT = os.getenv('DB_PORT', 3306)
+
 async def create_database_and_table():
     # Connect to the MySQL Server
-    conn = await aiomysql.connect(host=SQL_IP, port=int(SQL_dk),
-                                  user=SQL_name, password=SQL_password)
+    conn = await aiomysql.connect(host=DB_HOST, port=int(DB_PORT),
+                                  user=DB_USER, password=DB_PASSWORD)
     cursor = await conn.cursor()
 
     # Create a new database 'SunoAPI' (if it doesn't exist)
     # await cursor.execute("CREATE DATABASE IF NOT EXISTS WSunoAPI")
 
     # Select the newly created database
-    await cursor.execute(f"USE {SQL_name}")
+    await cursor.execute(f"USE {DB_USER}")
 
     # Create a new table 'cookies' (if it doesn't exist)
     await cursor.execute("""
@@ -29,8 +29,7 @@ async def create_database_and_table():
             id INT AUTO_INCREMENT PRIMARY KEY,
             cookie TEXT NOT NULL,
             count INT NOT NULL,
-            working BOOLEAN NOT NULL,
-            UNIQUE(cookie(255))
+            working BOOLEAN NOT NULL
             )
     """)
 
@@ -39,7 +38,7 @@ async def create_database_and_table():
 
 
 async def main():
-    if SQL_IP == '' or SQL_password == '' or SQL_name == '':
+    if DB_HOST == '' or DB_PASSWORD == '' or DB_USER == '':
         raise ValueError("BASE_URL is not set")
     else:
         await create_database_and_table()

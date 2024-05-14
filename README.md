@@ -43,17 +43,17 @@ This tutorial provides step-by-step guidance on running a Docker container with 
 
 2. **Run Docker Container**
 
-   Run the Docker container using necessary environment variables and port mappings. Replace `<SQL_NAME>`, `<SQL_PASSWORD>`, and `<SQL_IP>` with your actual SQL database connection values. These should be kept confidential and not shared publicly.
+   Run the Docker container using necessary environment variables and port mappings. Replace `<SQL_NAME>`, `<SQL_PASSWORD>`, and `<DB_HOST>` with your actual SQL database connection values. These should be kept confidential and not shared publicly.
 
    ```bash
    docker run -d --name wsunoapi \
    -p 8000:8000 \
    -e BASE_URL='https://studio-api.suno.ai' \
    -e SESSION_ID='<your-session-id not required>' \
-   -e SQL_name='<SQL_NAME>' \
-   -e SQL_password='<SQL_PASSWORD>' \
-   -e SQL_IP='<SQL_IP>' \
-   -e SQL_dk=3306 \
+   -e DB_USER='<SQL_NAME>' \
+   -e DB_PASSWORD='<SQL_PASSWORD>' \
+   -e DB_HOST='<DB_HOST>' \
+   -e DB_PORT=3306 \
    --restart=always \
    wlhtea/suno2openai:0.1.1
    ```
@@ -82,7 +82,7 @@ Database may report error: 'NoneType' object has no attribute 'items', [check he
 
 ## Note
 
-Before running the Docker container, make sure you replace placeholders like `<SQL_NAME>`, `<SQL_PASSWORD>`, `<SQL_IP>`, and `<your-session-id>` with actual values.
+Before running the Docker container, make sure you replace placeholders like `<SQL_NAME>`, `<SQL_PASSWORD>`, `<DB_HOST>`, and `<your-session-id>` with actual values.
 ## 📦 Docker-Compose Deployment
 _Update Time: 2024/4/7 18:18_
 
@@ -99,10 +99,10 @@ Create a database (name it as you wish), remember to save the password, and ensu
 ```plaintext
 BASE_URL=https://studio-api.suno.ai
 SESSION_ID=cookie # This item does not need to be changed
-SQL_name=<Database Name>
-SQL_password=<Database Password>
-SQL_IP=<Database Host IP>
-SQL_dk=3306 # Database port
+DB_USER=<Database Name>
+DB_PASSWORD=<Database Password>
+DB_HOST=<Database Host IP>
+DB_PORT=3306 # Database port
 ```
 
 ### Enter the Project Directory

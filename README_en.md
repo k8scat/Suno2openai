@@ -40,25 +40,21 @@ This tutorial provides step-by-step instructions on how to run a Docker containe
 
 2. **Running a Docker container**
 
-   Run the Docker container with the necessary environment variables and port mapping. Replace `<SQL_NAME>`, `<SQL_PASSWORD>` and `<SQL_IP>` with the actual values of your SQL database connection. These values should be kept private and not shared publicly.
+   Run the Docker container with the necessary environment variables and port mapping. Replace `<SQL_NAME>`, `<SQL_PASSWORD>` and `<DB_HOST>` with the actual values of your SQL database connection. These values should be kept private and not shared publicly.
 
    ```bash
-   docker run -d --name wsunoapi \
-   -p 8000:8000 \
-   -e BASE_URL='https://studio-api.suno.ai' \
-   -e SESSION_ID='<your-session-id could care less>' \
-   -e SQL_name='<SQL_NAME>' \\
-   -e SQL_password='<SQL_PASSWORD>' \\
-   -e SQL_IP='<SQL_IP>' \
-   -e SQL_dk=3306 \
-   --restart=always \
-   wlhtea/suno2openai:latest
-   \ --restart=always
+   docker run -d --name suno2openai \
+      -p 8000:8000 \
+      -e DB_USER='<DB_USER>' \
+      -e DB_PASSWORD='<DB_PASSWORD>' \
+      -e DB_HOST='<DB_HOST>' \
+      -e DB_PORT=3306 \
+      --restart=always \
+      k8scat/suno2openai:latest
    ```
 
    **Parameter description:**
    - `-d`: Run the container in background mode and print the container ID.
-   - `--name wsunoapi`: Name your container `wsunoapi` for easy referencing.
    - `-p 8000:8000`: Maps the container's port 8000 to the host's port 8000.
    - `-e`: Set environment variables for your container.
    - `--restart=always`: Ensure that the container is always restarted, unless stopped manually.
@@ -80,7 +76,7 @@ Database may report error: 'NoneType' object has no attribute 'items', [check fo
 
 ## Caution.
 
-Before running the Docker container, make sure you replace placeholders such as `<SQL_NAME>`, `<SQL_PASSWORD>`, `<SQL_IP>`, and `<your-session-id>` with their actual values.
+Before running the Docker container, make sure you replace placeholders such as `<DB_USER>`, `<DB_PASSWORD>` and `<DB_HOST>` with their actual values.
 
 ---
 
@@ -89,22 +85,13 @@ _Updated: 2024/4/7 18:18_
 
 ### Clone the project to the server
 ```bash
-git clone https://github.com/wlhtea/Suno2openai.git
+git clone https://github.com/k8scat/Suno2openai.git
 ```
 
 ### Create a database
 Create a database (with any name you want), remember to save the password and make sure the database permissions are set correctly (Allow all IPs to connect or Docker container IPs only).
 
-### Configure environment variables
-**Rename the `env.example` file to `.env` and fill in the following fields:** ``plaintext
-```plaintext
-BASE_URL=https://studio-api.suno.ai
-SESSION_ID=cookie # This does not need to be changed.
-SQL_name=<database name
-SQL_password=<Password for database
-SQL_IP=<database host IP>
-SQL_dk=3306 # database port
-```
+### Configure environment variables in compose file
 
 ### Enter the project directory
 ```bash

@@ -46,17 +46,17 @@
 
 2. **运行Docker容器**
 
-   使用必要的环境变量和端口映射来运行Docker容器。将`<SQL_NAME>`、`<SQL_PASSWORD>`和`<SQL_IP>`替换为你的SQL数据库连接的实际值。这些值应当保密，不应公开分享。
+   使用必要的环境变量和端口映射来运行Docker容器。将`<SQL_NAME>`、`<SQL_PASSWORD>`和`<DB_HOST>`替换为你的SQL数据库连接的实际值。这些值应当保密，不应公开分享。
 
    ```bash
    docker run -d --name wsunoapi \
    -p 8000:8000 \
    -e BASE_URL='https://studio-api.suno.ai' \
    -e SESSION_ID='<your-session-id 可以不管>' \
-   -e SQL_name='<SQL_NAME>' \
-   -e SQL_password='<SQL_PASSWORD>' \
-   -e SQL_IP='<SQL_IP>' \
-   -e SQL_dk=3306 \
+   -e DB_USER='<SQL_NAME>' \
+   -e DB_PASSWORD='<SQL_PASSWORD>' \
+   -e DB_HOST='<DB_HOST>' \
+   -e DB_PORT=3306 \
    --restart=always \
    wlhtea/suno2openai:0.1.2
    ```
@@ -87,7 +87,7 @@
 
 ## 注意
 
-在运行Docker容器之前，确保你替换了占位符，如`<SQL_NAME>`、`<SQL_PASSWORD>`、`<SQL_IP>`以及`<your-session-id>`为实际值。
+在运行Docker容器之前，确保你替换了占位符，如`<SQL_NAME>`、`<SQL_PASSWORD>`、`<DB_HOST>`以及`<your-session-id>`为实际值。
 
 ---
 
@@ -107,10 +107,10 @@ git clone https://github.com/wlhtea/Suno2openai.git
 ```plaintext
 BASE_URL=https://studio-api.suno.ai
 SESSION_ID=cookie # 此项不需修改
-SQL_name=<数据库名称>
-SQL_password=<数据库密码>
-SQL_IP=<数据库主机IP>
-SQL_dk=3306 # 数据库端口
+DB_USER=<数据库名称>
+DB_PASSWORD=<数据库密码>
+DB_HOST=<数据库主机IP>
+DB_PORT=3306 # 数据库端口
 ```
 
 ### 进入项目目录

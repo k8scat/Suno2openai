@@ -2,19 +2,21 @@
 import datetime
 import json
 import os
+import random
+import string
+import time
 
-from fastapi import FastAPI, HTTPException, status, Depends, Request, Cookie
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from init_sql import create_database_and_table
-from utils import generate_music, get_feed, generate_lyrics, get_lyrics
-from deps import get_token
+from utils import generate_music, get_feed
 import schemas
-from cookie import suno_auth
 from utils import generate_music,get_feed
 import asyncio
 from suno.suno import SongsGen
 from starlette.responses import StreamingResponse
+from sql_uilts import DatabaseManager
 
 
 
@@ -35,62 +37,11 @@ async def get_root():
     return schemas.Response()
 
 
-# @app.post("/generate")
-# async def generate(data: schemas.GenerateBase):
-#     cookie = data.dict().get('cookie')
-#     session_id = data.dict().get('session_id')
-#     token = data.dict().get('token')
-#     try:
-#         suno_auth.set_session_id(session_id)
-#         suno_auth.load_cookie(cookie)
-#         resp = await generate_music(data.dict(), token)
-#         return resp
-#     except Exception as e:
-#         raise HTTPException(detail=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-#
-#
-# @app.get("/feed/{aid}")
-# async def fetch_feed(aid: str, token: str = Depends(get_token)):
-#     try:
-#         resp = await get_feed(aid, token)
-#         return resp
-#     except Exception as e:
-#         raise HTTPException(detail=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-#
-#
-# @app.post("/generate/lyrics/")
-# async def generate_lyrics_post(request: Request, token: str = Depends(get_token)):
-#     req = await request.json()
-#     prompt = req.get("prompt")
-#     if prompt is None:
-#         raise HTTPException(detail="prompt is required", status_code=status.HTTP_400_BAD_REQUEST)
-#
-#     try:
-#         resp = await generate_lyrics(prompt, token)
-#         return resp
-#     except Exception as e:
-#         raise HTTPException(detail=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-#
-#
-# @app.get("/lyrics/{lid}")
-# async def fetch_lyrics(lid: str, token: str = Depends(get_token)):
-#     try:
-#         resp = await get_lyrics(lid, token)
-#         return resp
-#     except Exception as e:
-#         raise HTTPException(detail=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-import asyncio
-import random
-import string
-import time
-from sql_uilts import DatabaseManager
 BASE_URL = os.getenv('BASE_URL','https://studio-api.suno.ai')
-SESSION_ID = os.getenv('SESSION_ID')
-SQL_name = os.getenv('SQL_name','')
-SQL_password = os.getenv('SQL_password','')
-SQL_IP = os.getenv('SQL_IP','')
-SQL_dk = os.getenv('SQL_dk',3306)
+DB_USER = os.getenv('DB_USER','')
+DB_PASSWORD = os.getenv('DB_PASSWORD','')
+DB_HOST = os.getenv('DB_HOST','')
+DB_PORT = os.getenv('DB_PORT',3306)
 
 def generate_random_string_async(length):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
@@ -98,35 +49,9 @@ def generate_random_string_async(length):
 def generate_timestamp_async():
     return int(time.time())
 
-import tiktoken
-
-def calculate_token_costs(input_prompt: str, output_prompt: str, model_name: str) -> (int, int):
-    """
-    Calculate the number of tokens for the input and output prompts based on the specified model.
-
-    Parameters:
-    input_prompt (str): The input prompt string.
-    output_prompt (str): The output prompt string.
-    model_name (str): The model name to determine the encoding.
-
-    Returns:
-    tuple: A tuple containing the number of tokens for the input prompt and the output prompt.
-    """
-    # Load the correct encoding for the given model
-    encoding = tiktoken.encoding_for_model(model_name)
-
-    # Encode the prompts
-    input_tokens = encoding.encode(input_prompt)
-    output_tokens = encoding.encode(output_prompt)
-
-    # Count the tokens
-    input_token_count = len(input_tokens)
-    output_token_count = len(output_tokens)
-
-    return input_token_count, output_token_count
 
 async def generate_data(chat_user_message,chat_id,timeStamp):
-    db_manager = DatabaseManager(SQL_IP, int(SQL_dk), SQL_name, SQL_password, SQL_name)
+    db_manager = DatabaseManager(DB_HOST, int(DB_PORT), DB_USER, DB_PASSWORD, DB_USER)
 
     while True:
         try:
@@ -135,20 +60,18 @@ async def generate_data(chat_user_message,chat_id,timeStamp):
             break
         except:
             await create_database_and_table()
+            db_manager.create_database_and_table()
     try:
         _return_ids = False
         _return_tags = False
         _return_title = False
         _return_prompt = False
         _return_image_url = False
-        _return_video_url = False
 
         await db_manager.update_cookie_working(cookie, True)
         await db_manager.update_cookie_count(cookie, 1)
 
-        token, sid = SongsGen(cookie)._get_auth_token(w=1)
-        suno_auth.set_session_id(sid)
-        suno_auth.load_cookie(cookie)
+        token = SongsGen(cookie).self._get_auth_token()
         data = {
             "gpt_description_prompt": f"{chat_user_message}",
             "prompt": "",
@@ -262,7 +185,7 @@ async def generate_data(chat_user_message,chat_id,timeStamp):
 @app.post("/v1/chat/completions")
 async def get_last_user_message(data: schemas.Data):
     content_all = ''
-    if SQL_IP == '' or SQL_password == '' or SQL_name == '':
+    if DB_HOST == '' or DB_PASSWORD == '' or DB_USER == '':
         raise ValueError("BASE_URL is not set")
     else:
         chat_id = generate_random_string_async(29)
@@ -294,7 +217,7 @@ async def get_last_user_message(data: schemas.Data):
                     content_all += content
                 except:
                     pass
-            input_tokens, output_tokens = calculate_token_costs(last_user_content,content_all,'gpt-3.5-turbo')
+            # input_tokens, output_tokens = calculate_token_costs(last_user_content,content_all,'gpt-3.5-turbo')
             json_string = {
                 "id": f"chatcmpl-{chat_id}",
                 "object": "chat.completion",
@@ -311,9 +234,9 @@ async def get_last_user_message(data: schemas.Data):
                     }
                 ],
                 "usage": {
-                    "prompt_tokens": input_tokens,
-                    "completion_tokens": output_tokens,
-                    "total_tokens": input_tokens+output_tokens
+                    "prompt_tokens": 0,
+                    "completion_tokens": 0,
+                    "total_tokens": 0
                 }
             }
 

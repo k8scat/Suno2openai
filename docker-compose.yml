@@ -1,9 +1,10 @@
-version: '3'
-
 services:
-  suno-api:
-    build: .
+  suno2openai:
+    build: k8scat/suno2openai:latest
     ports:
       - "8000:8000"
-    env_file:
-      - .env
+    environment:
+      - DB_HOST=127.0.0.1
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=root
