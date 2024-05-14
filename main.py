@@ -37,11 +37,12 @@ async def get_root():
     return schemas.Response()
 
 
-BASE_URL = os.getenv('BASE_URL','https://studio-api.suno.ai')
-DB_USER = os.getenv('DB_USER','')
-DB_PASSWORD = os.getenv('DB_PASSWORD','')
-DB_HOST = os.getenv('DB_HOST','')
-DB_PORT = os.getenv('DB_PORT',3306)
+BASE_URL = os.getenv('BASE_URL', 'https://studio-api.suno.ai')
+DB_USER = os.getenv('DB_USER', '')
+DB_PASSWORD = os.getenv('DB_PASSWORD', '')
+DB_HOST = os.getenv('DB_HOST', '')
+DB_PORT = os.getenv('DB_PORT', 3306)
+DB_NAME = os.getenv('DB_NAME', 'suno2openai')
 
 def generate_random_string_async(length):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
@@ -51,7 +52,7 @@ def generate_timestamp_async():
 
 
 async def generate_data(chat_user_message,chat_id,timeStamp):
-    db_manager = DatabaseManager(DB_HOST, int(DB_PORT), DB_USER, DB_PASSWORD, DB_USER)
+    db_manager = DatabaseManager(DB_HOST, int(DB_PORT), DB_USER, DB_PASSWORD, DB_NAME)
 
     while True:
         try:
